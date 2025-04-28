@@ -9,10 +9,8 @@ export const bookSlot = async (req, res) => {
     }
 
     const { slotId } = req.body;
-    console.log(slotId);
     //check slot exist
     const slot = await prisma.slot.findUnique({ where: { id: slotId } });
-    console.log(slot);
     if (!slot) {
       return res.status(404).json({ message: "Slot not found" });
     }
