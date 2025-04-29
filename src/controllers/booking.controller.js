@@ -8,8 +8,8 @@ export const bookSlot = async (req, res) => {
     if (req.user.role !== "USER") {
       return res.status(403).json({ message: "Only users can book slots" });
     }
-
     const { slotId } = req.body;
+
     //check slot exist
     const slot = await prisma.slot.findUnique({ where: { id: slotId } });
     if (!slot) {
@@ -24,8 +24,16 @@ export const bookSlot = async (req, res) => {
       },
     });
 
+    // add socket
+    const io = req.app.get("io");
+    io.emit("bookingCreated", {
+      message: "A new Booking Created",
+      booking,
+    });
+
     res.status(201).json({ message: "booking successful", booking });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ message: "Internal server Error" });
   }
 };
@@ -34,6 +42,10 @@ export const bookSlot = async (req, res) => {
 export const getuserBookings = async (req, res) => {
   try {
     const userId = req.user.id;
+
+    if (req.user.role !== "USER") {
+      return res.status(403).json({ message: "Only users can book slots" });
+    }
 
     const bookings = await prisma.booking.findMany({
       where: { userId },
@@ -54,6 +66,10 @@ export const getuserBookings = async (req, res) => {
 // cancel booking slot
 export const cancelBooking = async (req, res) => {
   try {
+    if (req.user.role !== "USER") {
+      return res.status(403).json({ message: "Only users can book slots" });
+    }
+
     const bookingId = req.params.bookingId;
     const userId = req.user.id;
 
@@ -62,14 +78,21 @@ export const cancelBooking = async (req, res) => {
       where: { id: Number(bookingId) },
     });
 
-    if (!bookingId)
-      return res.status(404).json({ message: "booking not found" });
+    if (!booking) return res.status(404).json({ message: "booking not found" });
 
     //check only user book user can cancel slot
     if (booking.userId !== userId)
       return res
-        .ststus(403)
+        .status(403)
         .json({ message: "you cannot cancel this booking" });
+
+    const io = req.app.get("io");
+    io.emit("bookingCancelled", {
+      message: "A booking was cancelled",
+      bookingId: booking.id,
+      slotId: booking.slotId,
+      userId: booking.userId,
+    });
 
     // delete booking
     await prisma.booking.delete({

@@ -6,6 +6,6 @@ import { getAllSlot } from "../controllers/slot.controller.js";
 const router = express.Router();
 router.post("/createslots", authenticate, createSlot);
 
-router.get("/all", authenticate ,getAllSlot);
+router.get("/all", authenticate, getAllSlot);
 
 export default router;

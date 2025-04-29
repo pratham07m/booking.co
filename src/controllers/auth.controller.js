@@ -42,15 +42,15 @@ export const SignUp = async (req, res) => {
       },
     });
 
-  //   const token = jwt.sign(
-  //     { userId: newuser.id, role: newuser.role },
-  //     process.env.JWT_SECRET,
-  //     { expiresIn: process.env.JWT_EXPIRY || "7d" }
-  //   );
+    //   const token = jwt.sign(
+    //     { userId: newuser.id, role: newuser.role },
+    //     process.env.JWT_SECRET,
+    //     { expiresIn: process.env.JWT_EXPIRY || "7d" }
+    //   );
 
-  //   res.cookie("token", token , {
-  //     expires: new Date(Date.now() + 8 * 3600000),
-  // });
+    //   res.cookie("token", token , {
+    //     expires: new Date(Date.now() + 8 * 3600000),
+    // });
 
     res.status(201).json({
       message: "User registered successfully",
@@ -96,18 +96,16 @@ export const Login = async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRY || "7d" }
     );
 
-    res.cookie("token", token,{
+    res.cookie("token", token, {
       expires: new Date(Date.now() + 8 * 3600000),
-  });
+    });
 
-    res
-      .status(200)
-      .json({
-        message: "Login successful",
-        Id: user.id,
-        name: user.name,
-        role: user.role,
-      });
+    res.status(200).json({
+      message: "Login successful",
+      Id: user.id,
+      name: user.name,
+      role: user.role,
+    });
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
   }

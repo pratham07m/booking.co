@@ -1,17 +1,26 @@
 import express from "express";
-// import cors from 'cors';
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+import { Server } from "socket.io";
+import http from "http";
+
 import authRoutes from "./routes/auth.routes.js";
-
 import slotrouter from "./routes/slot.routes.js";
-
 import bookingrouter from "../src/routes/booking.routes.js";
 
 dotenv.config();
 
 const app = express();
-// app.use(cors());
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
+
+app.set("io", io);
 app.use(express.json());
 app.use(cookieParser());
 
@@ -27,6 +36,6 @@ app.use("/api/slots", slotrouter);
 app.use("/api/booking", bookingrouter);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
