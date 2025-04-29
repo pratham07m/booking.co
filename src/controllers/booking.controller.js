@@ -56,7 +56,7 @@ export const cancelBooking = async (req, res) => {
   try {
     const bookingId = req.params.bookingId;
     const userId = req.user.id;
-    
+
     // find bookings
     const booking = await prisma.booking.findUnique({
       where: { id: Number(bookingId) },
@@ -79,5 +79,63 @@ export const cancelBooking = async (req, res) => {
     res.status(200).json({ message: "booking cancelld successfully" });
   } catch (error) {
     res.status(500).json({ message: "internal server error" });
+  }
+};
+
+// get Organizer Bookings
+export const getOrganizerBookings = async (req, res) => {
+  try {
+    if (req.user.role !== "ORGANIZER") {
+      return res.status(404).json({ message: "you cannot show bookings " });
+    }
+    const slots = await prisma.slot.findMany({
+      where: {
+        organizerId: req.user.id,
+      },
+      include: {
+        Booking: true,
+        organizer: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+    return res.status(200).json({ slots });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "internal server error" });
+  }
+};
+
+// get booking details
+export const getBookingDetails = async (req, res) => {
+  try {
+    if (req.user.role !== "USER") {
+      return res.status(404).json({ message: "you can't see users bookings" });
+    }
+    const { bookingId } = req.params;
+
+    const booking = await prisma.booking.findUnique({
+      where: { id: Number(bookingId) },
+      include: {
+        slot: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+    if (!booking) {
+      return res.status(404).json({ message: "booking not found" });
+    }
+    return res.status(200).json({ message: { booking } });
+  } catch (error) {
+    return res.status(500).json({ message: "internal server error" });
   }
 };
